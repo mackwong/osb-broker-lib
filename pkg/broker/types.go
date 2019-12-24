@@ -51,3 +51,12 @@ type GetBindingResponse struct {
 type UnbindResponse struct {
 	osb.UnbindResponse
 }
+
+type OperationResponse struct {
+	osb.OperationResponse
+
+	// Exists - is set if the request was already completed
+	// and the requested parameters are identical to the existing
+	// Service Binding.
+	Exists bool `json:"-"`
+}

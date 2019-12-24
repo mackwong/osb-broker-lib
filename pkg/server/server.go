@@ -60,6 +60,7 @@ func registerAPIHandlers(router *mux.Router, api *rest.APISurface) {
 	router.HandleFunc("/v2/service_instances/{instance_id}/service_bindings/{binding_id}", api.GetBindingHandler).Methods("GET")
 	router.HandleFunc("/v2/service_instances/{instance_id}/service_bindings/{binding_id}/last_operation", api.BindingLastOperationHandler).Methods("GET")
 	router.HandleFunc("/v2/service_instances/{instance_id}/service_bindings/{binding_id}", api.UnbindHandler).Methods("DELETE")
+	router.HandleFunc("/v2/service_instances/{instance_id}/extensions/{extension_id}", api.ExtensionHandler).Methods("GET")
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
