@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // internal message body types
@@ -75,6 +75,11 @@ func (c *client) Bind(r *BindRequest) (*BindResponse, error) {
 		return nil, err
 	}
 
+	defer func() {
+		drainReader(response.Body)
+		response.Body.Close()
+	}()
+
 	switch response.StatusCode {
 	case http.StatusOK, http.StatusCreated:
 		userResponse := &BindResponse{}
@@ -109,7 +114,7 @@ func (c *client) Bind(r *BindRequest) (*BindResponse, error) {
 		}
 		if response.StatusCode == http.StatusAccepted {
 			if c.Verbose {
-				glog.Infof("broker %q: received asynchronous response", c.Name)
+				klog.Infof("broker %q: received asynchronous response", c.Name)
 			}
 			userResponse.Async = true
 		}

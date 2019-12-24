@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type unbindSuccessResponseBody struct {
@@ -37,6 +37,11 @@ func (c *client) Unbind(r *UnbindRequest) (*UnbindResponse, error) {
 		return nil, err
 	}
 
+	defer func() {
+		drainReader(response.Body)
+		response.Body.Close()
+	}()
+
 	switch response.StatusCode {
 	case http.StatusOK, http.StatusGone:
 		userResponse := &UnbindResponse{}
@@ -67,7 +72,7 @@ func (c *client) Unbind(r *UnbindRequest) (*UnbindResponse, error) {
 		}
 		if response.StatusCode == http.StatusAccepted {
 			if c.Verbose {
-				glog.Infof("broker %q: received asynchronous response", c.Name)
+				klog.Infof("broker %q: received asynchronous response", c.Name)
 			}
 			userResponse.Async = true
 		}

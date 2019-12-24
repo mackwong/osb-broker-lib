@@ -87,12 +87,14 @@ func IsConflictError(err error) bool {
 	return statusCodeError.StatusCode == http.StatusConflict
 }
 
-// Constants are used to check for "Async" and "RequiresApp" errors and their messages
+// Constants are used to check for spec-mandated errors and their messages
 const (
 	AsyncErrorMessage               = "AsyncRequired"
 	AsyncErrorDescription           = "This service plan requires client support for asynchronous service operations."
 	AppGUIDRequiredErrorMessage     = "RequiresApp"
 	AppGUIDRequiredErrorDescription = "This service supports generation of credentials through binding an application only."
+	ConcurrencyErrorMessage         = "ConcurrencyError"
+	ConcurrencyErrorDescription     = "The Service Broker does not support concurrent requests that mutate the same resource."
 )
 
 // IsAsyncRequiredError returns whether the error corresponds to the
@@ -143,6 +145,30 @@ func IsAppGUIDRequiredError(err error) bool {
 	return *statusCodeError.Description == AppGUIDRequiredErrorDescription
 }
 
+// IsConcurrencyError returns whether the error corresponds to the
+// conventional way of indicating that a service broker does not support
+// concurrent requests to modify the same resource
+func IsConcurrencyError(err error) bool {
+	statusCodeError, ok := err.(HTTPStatusCodeError)
+	if !ok {
+		return false
+	}
+
+	if statusCodeError.StatusCode != http.StatusUnprocessableEntity {
+		return false
+	}
+
+	if statusCodeError.ErrorMessage == nil || statusCodeError.Description == nil {
+		return false
+	}
+
+	if *statusCodeError.ErrorMessage != ConcurrencyErrorMessage {
+		return false
+	}
+
+	return *statusCodeError.Description == ConcurrencyErrorDescription
+}
+
 // AlphaAPIMethodsNotAllowedError is an error type signifying that alpha API
 // methods are not allowed for this client's API Version.
 type AlphaAPIMethodsNotAllowedError struct {
@@ -179,7 +205,7 @@ func (e AsyncBindingOperationsNotAllowedError) Error() string {
 	return fmt.Sprintf("Asynchronous binding operations are not allowed: %s", e.reason)
 }
 
-// AsyncBindingOperationsNotAllowedError returns whether the error represents asynchronous
+// IsAsyncBindingOperationsNotAllowedError returns whether the error represents asynchronous
 // binding operations (bind/unbind/poll) not being allowed for this client.
 func IsAsyncBindingOperationsNotAllowedError(err error) bool {
 	_, ok := err.(AsyncBindingOperationsNotAllowedError)

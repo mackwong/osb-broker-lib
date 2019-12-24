@@ -13,6 +13,11 @@ func (c *client) GetCatalog() (*CatalogResponse, error) {
 		return nil, err
 	}
 
+	defer func() {
+		drainReader(response.Body)
+		response.Body.Close()
+	}()
+
 	switch response.StatusCode {
 	case http.StatusOK:
 		catalogResponse := &CatalogResponse{}
@@ -23,7 +28,18 @@ func (c *client) GetCatalog() (*CatalogResponse, error) {
 		if !c.APIVersion.AtLeast(Version2_13()) {
 			for ii := range catalogResponse.Services {
 				for jj := range catalogResponse.Services[ii].Plans {
-					catalogResponse.Services[ii].Plans[jj].ParameterSchemas = nil
+					catalogResponse.Services[ii].Plans[jj].Schemas = nil
+				}
+			}
+		} else if !c.EnableAlphaFeatures {
+			for ii := range catalogResponse.Services {
+				for jj := range catalogResponse.Services[ii].Plans {
+					schemas := catalogResponse.Services[ii].Plans[jj].Schemas
+					if schemas != nil {
+						if schemas.ServiceBinding != nil {
+							removeResponseSchema(schemas.ServiceBinding.Create)
+						}
+					}
 				}
 			}
 		}
@@ -31,5 +47,11 @@ func (c *client) GetCatalog() (*CatalogResponse, error) {
 		return catalogResponse, nil
 	default:
 		return nil, c.handleFailureResponse(response)
+	}
+}
+
+func removeResponseSchema(p *RequestResponseSchema) {
+	if p != nil {
+		p.Response = nil
 	}
 }

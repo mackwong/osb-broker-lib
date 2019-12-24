@@ -66,6 +66,16 @@ func (s *APISurface) GetCatalogHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if response != nil {
+		for serviceIndex, service := range response.Services {
+			for planIndex, plan := range service.Plans {
+				for extensionIndex, extension := range plan.Extensions {
+					response.Services[serviceIndex].Plans[planIndex].Extensions[extensionIndex].Path = fmt.Sprintf("/extensions/%s", extension.Name)
+				}
+			}
+		}
+	}
+
 	s.writeResponse(w, http.StatusOK, response)
 }
 
