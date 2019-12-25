@@ -10,7 +10,7 @@ github.com/gorilla/context
 github.com/gorilla/mux
 # github.com/matttproud/golang_protobuf_extensions v1.0.0
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/pmorie/go-open-service-broker-client v0.0.0-20180304212357-e8aa16c90363 => github.com/mackwong/go-open-service-broker-client v0.0.0-20191224120511-844558532d33
+# github.com/pmorie/go-open-service-broker-client v0.0.0-20180304212357-e8aa16c90363 => github.com/mackwong/go-open-service-broker-client v0.0.0-20191225033153-e9e53816a45a
 github.com/pmorie/go-open-service-broker-client/v2
 # github.com/prometheus/client_golang v0.8.0
 github.com/prometheus/client_golang/prometheus

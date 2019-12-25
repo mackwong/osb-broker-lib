@@ -108,7 +108,7 @@ type Extension struct {
 	// a CLI.
 	Description string `json:"description"`
 	// a URI pointing to a valid document describing the API extension(s) available on each Service Instance of the Service Plan
-	OpenapiUrl  string `json:"openapi_url"`
+	OpenapiUrl string `json:"openapi_url"`
 }
 
 // Schemas requires a client API version >=2.13.
@@ -609,4 +609,68 @@ type GetBindingResponse struct {
 	VolumeMounts []interface{} `json:"volume_mounts,omitempty"`
 	// Parameters is configuration parameters for the binding.
 	Parameters map[string]interface{} `json:"parameters,omitempty"`
+}
+
+// OperationRequest represents a request to trigger a operation to an instance of
+// a service.
+type OperationRequest struct {
+	// OperationID is the ID of the new Operation to create. The Open Service
+	// Broker API specification recommends using a GUID for this field.
+	OperationID string `json:"operation_id"`
+	// InstanceID is the ID of the instance to bind to.
+	InstanceID string `json:"instance_id"`
+	// AcceptsIncomplete is an ALPHA API attribute and may change. Alpha
+	// features must be enabled and the client must be using the latest API
+	// Version in order to use this.
+	//
+	// AcceptsIncomplete indicates whether the client can accept asynchronous
+	// binding. If the broker cannot fulfill a request synchronously and
+	// AcceptsIncomplete is set to false, the broker will reject the request. A
+	// broker may choose to response to a request with AcceptsIncomplete set to
+	// true either synchronously or asynchronously.
+	AcceptsIncomplete bool `json:"accepts_incomplete"`
+	// ServiceID is the ID of the service the instance was provisioned from.
+	ServiceID string `json:"service_id"`
+	// PlanID is the ID of the plan the instance was provisioned from.
+	PlanID string `json:"plan_id"`
+	// Deprecated; use bind_resource.app_guid to send this value instead.
+	AppGUID *string `json:"app_guid,omitempty"`
+	// Parameters is configuration parameters for the binding. Optional.
+	Parameters map[string]interface{} `json:"parameters,omitempty"`
+	// Context requires a client API version >= 2.13.
+	//
+	// Context is platform-specific contextual information under which the
+	// service binding is to be created.
+	Context map[string]interface{} `json:"context,omitempty"`
+	// OriginatingIdentity requires a client API version >= 2.13.
+	//
+	// OriginatingIdentity is the identity on the platform of the user making
+	// this request.
+	OriginatingIdentity *OriginatingIdentity `json:"originatingIdentity,omitempty"`
+}
+
+// OperationResponse represents a broker's response to an OperationRequest.
+type OperationResponse struct {
+	// Async is an ALPHA API attribute and may change. Alpha features must be
+	// enabled and the client must be using the latest API Version in order to
+	// use this.
+	//
+	// Async indicates whether the broker is handling the unbind request
+	// asynchronously.
+	Async bool `json:"async"`
+	// OperationKey is an ALPHA API attribute and may change. Alpha features
+	// must be enabled and the client must be using the latest API Version in
+	// order to use this.
+	//
+	// OperationKey is an extra identifier supplied by the broker to identify
+	// asynchronous operations.
+	OperationKey *OperationKey `json:"operation,omitempty"`
+}
+
+// GetOperationRequest represents a request to do a GET on a particular binding.
+type GetOperationRequest struct {
+	// InstanceID is the ID of the instance the binding is for.
+	InstanceID string `json:"instance_id"`
+	// BindingID is the ID of the binding to delete.
+	OperationID string `json:"operation_id"`
 }

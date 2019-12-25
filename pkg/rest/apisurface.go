@@ -70,10 +70,36 @@ func (s *APISurface) GetCatalogHandler(w http.ResponseWriter, r *http.Request) {
 		for serviceIndex, service := range response.Services {
 			for planIndex, plan := range service.Plans {
 				for extensionIndex, extension := range plan.Extensions {
-					response.Services[serviceIndex].Plans[planIndex].Extensions[extensionIndex].Path = fmt.Sprintf("/extensions/%s", extension.Name)
+					response.Services[serviceIndex].Plans[planIndex].Extensions[extensionIndex].Path = fmt.Sprintf("extensions/%s", extension.Name)
+					response.Services[serviceIndex].Plans[planIndex].Extensions[extensionIndex].OpenapiUrl = fmt.Sprintf("/v2/extensions/%s/document", extension.Name)
 				}
 			}
 		}
+	}
+
+	s.writeResponse(w, http.StatusOK, response)
+}
+
+// GetExtensionDocument is the mux handler that dispatches requests to get the
+// extension's document to the broker's Interface.
+func (s *APISurface) GetExtensionDocument(w http.ResponseWriter, r *http.Request) {
+	s.Metrics.Actions.WithLabelValues("get_catalog").Inc()
+
+	version := getBrokerAPIVersionFromRequest(r)
+	if err := s.Broker.ValidateBrokerAPIVersion(version); err != nil {
+		s.writeError(w, err, http.StatusPreconditionFailed)
+		return
+	}
+
+	c := &broker.RequestContext{
+		Writer:  w,
+		Request: r,
+	}
+
+	response, err := s.Broker.GetExtensionDocument(c)
+	if err != nil {
+		s.writeError(w, err, http.StatusInternalServerError)
+		return
 	}
 
 	s.writeResponse(w, http.StatusOK, response)
@@ -496,6 +522,62 @@ func (s *APISurface) UnbindHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.writeResponse(w, http.StatusOK, response)
+}
+
+// ExtensionHandler is the mux handler that dispatches extension requests to the
+// broker's Interface.
+func (s *APISurface) OperationHandler(w http.ResponseWriter, r *http.Request) {
+	s.Metrics.Actions.WithLabelValues("extension").Inc()
+
+	version := getBrokerAPIVersionFromRequest(r)
+	if err := s.Broker.ValidateBrokerAPIVersion(version); err != nil {
+		s.writeError(w, err, http.StatusPreconditionFailed)
+		return
+	}
+
+	v := mux.Vars(r)
+	request, err := unpackOperationRequest(r, v)
+	if err != nil {
+		s.writeError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	glog.V(4).Infof("Received ExtensionRequest for instanceID %q, operationID %q", request.InstanceID, request.OperationID)
+	c := &broker.RequestContext{
+		Writer:  w,
+		Request: r,
+	}
+
+	response, err := s.Broker.Operate(request, c)
+	if err != nil {
+		s.writeError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	s.writeResponse(w, http.StatusOK, response)
+}
+
+// unpackUnbindRequest unpacks an osb request from the given HTTP request.
+func unpackOperationRequest(r *http.Request, vars map[string]string) (*osb.OperationRequest, error) {
+	osbRequest := &osb.OperationRequest{}
+
+	osbRequest.InstanceID = vars[osb.VarKeyInstanceID]
+	osbRequest.OperationID = vars[osb.VarKeyOperationID]
+
+	// plan_id and service_id are set in the query string parameters and thus need to
+	// be obtained differently than instance_id and binding_id.
+	osbRequest.PlanID = r.FormValue(osb.VarKeyPlanID)
+	osbRequest.ServiceID = r.FormValue(osb.VarKeyServiceID)
+
+	identity, err := retrieveOriginatingIdentity(r)
+	// This could be not found because platforms may support the feature
+	// but are not guaranteed to.
+	if err != nil {
+		glog.Infof("Unable to retrieve originating identity - %v", err)
+	}
+	osbRequest.OriginatingIdentity = identity
+
+	return osbRequest, nil
 }
 
 // unpackUnbindRequest unpacks an osb request from the given HTTP request.

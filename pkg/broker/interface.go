@@ -207,6 +207,10 @@ type Interface interface {
 	//
 	// https://github.com/openservicebrokerapi/servicebroker/blob/master/spec.md#updating-a-service-instance
 	Update(request *osb.UpdateInstanceRequest, c *RequestContext) (*UpdateInstanceResponse, error)
+
+	Operate(request *osb.OperationRequest, c *RequestContext) (*OperationResponse, error)
+
+	GetExtensionDocument(c *RequestContext) (*string, error)
 }
 
 // RequestContext encapsulates the following parameters:
