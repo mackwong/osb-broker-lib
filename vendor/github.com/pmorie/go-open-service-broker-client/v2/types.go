@@ -108,7 +108,7 @@ type Extension struct {
 	// a CLI.
 	Description string `json:"description"`
 	// a URI pointing to a valid document describing the API extension(s) available on each Service Instance of the Service Plan
-	OpenapiUrl  string `json:"openapi_url"`
+	OpenapiUrl string `json:"openapi_url"`
 }
 
 // Schemas requires a client API version >=2.13.
@@ -611,10 +611,10 @@ type GetBindingResponse struct {
 	Parameters map[string]interface{} `json:"parameters,omitempty"`
 }
 
-// OperationRequest represents a request to create a new operation to an instance of
+// OperationRequest represents a request to trigger a operation to an instance of
 // a service.
 type OperationRequest struct {
-	// OperationID is the ID of the new operation to create. The Open Service
+	// OperationID is the ID of the new Operation to create. The Open Service
 	// Broker API specification recommends using a GUID for this field.
 	OperationID string `json:"operation_id"`
 	// InstanceID is the ID of the instance to bind to.
@@ -649,23 +649,28 @@ type OperationRequest struct {
 	OriginatingIdentity *OriginatingIdentity `json:"originatingIdentity,omitempty"`
 }
 
-// OperationResponse represents a broker's response to a OperationRequest.
+// OperationResponse represents a broker's response to an OperationRequest.
 type OperationResponse struct {
-	// Async is an ALPHA API attribute and may change. Alpha
-	// features must be enabled and the client must be using the
-	// latest API Version in order to use this.
+	// Async is an ALPHA API attribute and may change. Alpha features must be
+	// enabled and the client must be using the latest API Version in order to
+	// use this.
 	//
-	// Async indicates whether the broker is handling the bind request
+	// Async indicates whether the broker is handling the unbind request
 	// asynchronously.
 	Async bool `json:"async"`
-	// Credentials is a free-form hash of credentials that can be used by
-	// applications or users to access the service.
-	Credentials map[string]interface{} `json:"credentials,omitempty"`
-	// OperationKey is an ALPHA API attribute and may change. Alpha
-	// features must be enabled and the client must be using the
-	// latest API Version in order to use this.
+	// OperationKey is an ALPHA API attribute and may change. Alpha features
+	// must be enabled and the client must be using the latest API Version in
+	// order to use this.
 	//
 	// OperationKey is an extra identifier supplied by the broker to identify
 	// asynchronous operations.
 	OperationKey *OperationKey `json:"operation,omitempty"`
+}
+
+// GetOperationRequest represents a request to do a GET on a particular binding.
+type GetOperationRequest struct {
+	// InstanceID is the ID of the instance the binding is for.
+	InstanceID string `json:"instance_id"`
+	// BindingID is the ID of the binding to delete.
+	OperationID string `json:"operation_id"`
 }

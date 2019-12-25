@@ -80,6 +80,31 @@ func (s *APISurface) GetCatalogHandler(w http.ResponseWriter, r *http.Request) {
 	s.writeResponse(w, http.StatusOK, response)
 }
 
+// GetExtensionDocument is the mux handler that dispatches requests to get the
+// extension's document to the broker's Interface.
+func (s *APISurface) GetExtensionDocument(w http.ResponseWriter, r *http.Request) {
+	s.Metrics.Actions.WithLabelValues("get_catalog").Inc()
+
+	version := getBrokerAPIVersionFromRequest(r)
+	if err := s.Broker.ValidateBrokerAPIVersion(version); err != nil {
+		s.writeError(w, err, http.StatusPreconditionFailed)
+		return
+	}
+
+	c := &broker.RequestContext{
+		Writer:  w,
+		Request: r,
+	}
+
+	response, err := s.Broker.GetExtensionDocument(c)
+	if err != nil {
+		s.writeError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	s.writeResponse(w, http.StatusOK, response)
+}
+
 // ProvisionHandler is the mux handler that dispatches ProvisionRequests to the
 // broker's Interface.
 func (s *APISurface) ProvisionHandler(w http.ResponseWriter, r *http.Request) {
@@ -501,7 +526,7 @@ func (s *APISurface) UnbindHandler(w http.ResponseWriter, r *http.Request) {
 
 // ExtensionHandler is the mux handler that dispatches extension requests to the
 // broker's Interface.
-func (s *APISurface) ExtensionHandler(w http.ResponseWriter, r *http.Request) {
+func (s *APISurface) OperationHandler(w http.ResponseWriter, r *http.Request) {
 	s.Metrics.Actions.WithLabelValues("extension").Inc()
 
 	version := getBrokerAPIVersionFromRequest(r)
@@ -511,19 +536,19 @@ func (s *APISurface) ExtensionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := mux.Vars(r)
-	request, err := unpackUnbindRequest(r, v)
+	request, err := unpackOperationRequest(r, v)
 	if err != nil {
 		s.writeError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	glog.V(4).Infof("Received ExtensionRequest for instanceID %q, extensionID %q", request.InstanceID, request.BindingID)
+	glog.V(4).Infof("Received ExtensionRequest for instanceID %q, operationID %q", request.InstanceID, request.OperationID)
 	c := &broker.RequestContext{
 		Writer:  w,
 		Request: r,
 	}
 
-	response, err := s.Broker.Unbind(request, c)
+	response, err := s.Broker.Operate(request, c)
 	if err != nil {
 		s.writeError(w, err, http.StatusInternalServerError)
 		return
@@ -532,13 +557,12 @@ func (s *APISurface) ExtensionHandler(w http.ResponseWriter, r *http.Request) {
 	s.writeResponse(w, http.StatusOK, response)
 }
 
-
 // unpackUnbindRequest unpacks an osb request from the given HTTP request.
-func unpackExtensionRequest(r *http.Request, vars map[string]string) (*osb.OperationRequest, error) {
+func unpackOperationRequest(r *http.Request, vars map[string]string) (*osb.OperationRequest, error) {
 	osbRequest := &osb.OperationRequest{}
 
 	osbRequest.InstanceID = vars[osb.VarKeyInstanceID]
-	osbRequest.OperationID = vars[osb.VarKeyBindingID]
+	osbRequest.OperationID = vars[osb.VarKeyOperationID]
 
 	// plan_id and service_id are set in the query string parameters and thus need to
 	// be obtained differently than instance_id and binding_id.

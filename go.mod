@@ -17,4 +17,4 @@ require (
 	k8s.io/klog v1.0.0 // indirect
 )
 
-replace github.com/pmorie/go-open-service-broker-client => github.com/mackwong/go-open-service-broker-client v0.0.0-20191224120511-844558532d33
+replace github.com/pmorie/go-open-service-broker-client => github.com/mackwong/go-open-service-broker-client v0.0.0-20191225033153-e9e53816a45a

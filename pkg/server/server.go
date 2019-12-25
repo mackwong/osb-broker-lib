@@ -52,6 +52,7 @@ func NewHTTPHandler(api *rest.APISurface) http.Handler {
 // registerAPIHandlers registers the APISurface endpoints and handlers.
 func registerAPIHandlers(router *mux.Router, api *rest.APISurface) {
 	router.HandleFunc("/v2/catalog", api.GetCatalogHandler).Methods("GET")
+	router.HandleFunc("/v2/extensions/{extension_id}/document", api.GetCatalogHandler).Methods("GET")
 	router.HandleFunc("/v2/service_instances/{instance_id}/last_operation", api.LastOperationHandler).Methods("GET")
 	router.HandleFunc("/v2/service_instances/{instance_id}", api.ProvisionHandler).Methods("PUT")
 	router.HandleFunc("/v2/service_instances/{instance_id}", api.DeprovisionHandler).Methods("DELETE")
@@ -60,7 +61,7 @@ func registerAPIHandlers(router *mux.Router, api *rest.APISurface) {
 	router.HandleFunc("/v2/service_instances/{instance_id}/service_bindings/{binding_id}", api.GetBindingHandler).Methods("GET")
 	router.HandleFunc("/v2/service_instances/{instance_id}/service_bindings/{binding_id}/last_operation", api.BindingLastOperationHandler).Methods("GET")
 	router.HandleFunc("/v2/service_instances/{instance_id}/service_bindings/{binding_id}", api.UnbindHandler).Methods("DELETE")
-	router.HandleFunc("/v2/service_instances/{instance_id}/extensions/{extension_id}", api.ExtensionHandler).Methods("GET")
+	router.HandleFunc("/v2/service_instances/{instance_id}/extensions/{extension_id}", api.OperationHandler).Methods("GET")
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})

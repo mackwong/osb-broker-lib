@@ -10,7 +10,7 @@ github.com/gorilla/context
 github.com/gorilla/mux
 # github.com/matttproud/golang_protobuf_extensions v1.0.0
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/pmorie/go-open-service-broker-client v0.0.0-20180304212357-e8aa16c90363 => github.com/mackwong/go-open-service-broker-client v0.0.0-20191224120511-844558532d33
+# github.com/pmorie/go-open-service-broker-client v0.0.0-20180304212357-e8aa16c90363 => github.com/mackwong/go-open-service-broker-client v0.0.0-20191225033153-e9e53816a45a
 github.com/pmorie/go-open-service-broker-client/v2
 # github.com/prometheus/client_golang v0.8.0
 github.com/prometheus/client_golang/prometheus
@@ -19,12 +19,12 @@ github.com/prometheus/client_golang/prometheus/promhttp
 github.com/prometheus/client_model/go
 # github.com/prometheus/common v0.0.0-20180110214958-89604d197083
 github.com/prometheus/common/expfmt
-github.com/prometheus/common/model
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
+github.com/prometheus/common/model
 # github.com/prometheus/procfs v0.0.0-20180212145926-282c8707aa21
 github.com/prometheus/procfs
+github.com/prometheus/procfs/internal/util
 github.com/prometheus/procfs/nfs
 github.com/prometheus/procfs/xfs
-github.com/prometheus/procfs/internal/util
 # k8s.io/klog v1.0.0
 k8s.io/klog
