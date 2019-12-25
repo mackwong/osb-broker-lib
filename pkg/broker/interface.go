@@ -210,7 +210,7 @@ type Interface interface {
 
 	Operate(request *osb.OperationRequest, c *RequestContext) (*OperationResponse, error)
 
-	GetExtensionDocument(c *RequestContext) (*string, error)
+	GetExtensionDocument(request *osb.ExtensionDocumentRequest, c *RequestContext) (*string, error)
 }
 
 // RequestContext encapsulates the following parameters:

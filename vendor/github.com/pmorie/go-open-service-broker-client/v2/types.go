@@ -611,6 +611,17 @@ type GetBindingResponse struct {
 	Parameters map[string]interface{} `json:"parameters,omitempty"`
 }
 
+// UnbindRequest represents a request to unbind a particular binding.
+type ExtensionDocumentRequest struct {
+	// BindingID is the ID of the binding to delete.
+	ExtensionID string `json:"extension_id"`
+	// OriginatingIdentity requires a client API version >= 2.13.
+	//
+	// OriginatingIdentity is the identity on the platform of the user making
+	// this request.
+	OriginatingIdentity *OriginatingIdentity `json:"originatingIdentity,omitempty"`
+}
+
 // OperationRequest represents a request to trigger a operation to an instance of
 // a service.
 type OperationRequest struct {

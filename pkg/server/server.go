@@ -52,7 +52,7 @@ func NewHTTPHandler(api *rest.APISurface) http.Handler {
 // registerAPIHandlers registers the APISurface endpoints and handlers.
 func registerAPIHandlers(router *mux.Router, api *rest.APISurface) {
 	router.HandleFunc("/v2/catalog", api.GetCatalogHandler).Methods("GET")
-	router.HandleFunc("/v2/extensions/{extension_id}/document", api.GetCatalogHandler).Methods("GET")
+	router.HandleFunc("/v2/extensions/{extension_id}/document", api.GetExtensionDocument).Methods("GET")
 	router.HandleFunc("/v2/service_instances/{instance_id}/last_operation", api.LastOperationHandler).Methods("GET")
 	router.HandleFunc("/v2/service_instances/{instance_id}", api.ProvisionHandler).Methods("PUT")
 	router.HandleFunc("/v2/service_instances/{instance_id}", api.DeprovisionHandler).Methods("DELETE")

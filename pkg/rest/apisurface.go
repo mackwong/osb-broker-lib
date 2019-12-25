@@ -96,13 +96,43 @@ func (s *APISurface) GetExtensionDocument(w http.ResponseWriter, r *http.Request
 		Request: r,
 	}
 
-	response, err := s.Broker.GetExtensionDocument(c)
+	request, err := unpackExtensionDocumentRequest(r)
+	if err != nil {
+		s.writeError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	response, err := s.Broker.GetExtensionDocument(request, c)
 	if err != nil {
 		s.writeError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	s.writeResponse(w, http.StatusOK, response)
+}
+
+// unpackExtensionDocumentRequest unpacks an osb request from the given HTTP request.
+func unpackExtensionDocumentRequest(r *http.Request) (*osb.ExtensionDocumentRequest, error) {
+	// unpacking an osb request from an http request involves:
+	// - unmarshaling the request body
+	// - getting IDs out of mux vars
+	// - getting query parameters from request URL
+	// - retrieve originating origin identity
+	osbRequest := &osb.ExtensionDocumentRequest{}
+
+	vars := mux.Vars(r)
+	osbRequest.ExtensionID = vars[osb.VarKeyExtensionID]
+
+	identity, err := retrieveOriginatingIdentity(r)
+	// This could be not found because platforms may support the feature
+	// but are not guaranteed to.
+	if err != nil {
+		glog.Infof("Unable to retrieve originating identity - %v", err)
+	}
+
+	osbRequest.OriginatingIdentity = identity
+
+	return osbRequest, nil
 }
 
 // ProvisionHandler is the mux handler that dispatches ProvisionRequests to the
@@ -560,9 +590,12 @@ func (s *APISurface) OperationHandler(w http.ResponseWriter, r *http.Request) {
 // unpackUnbindRequest unpacks an osb request from the given HTTP request.
 func unpackOperationRequest(r *http.Request, vars map[string]string) (*osb.OperationRequest, error) {
 	osbRequest := &osb.OperationRequest{}
+	if err := unmarshalRequestBody(r, osbRequest); err != nil {
+		return nil, err
+	}
 
 	osbRequest.InstanceID = vars[osb.VarKeyInstanceID]
-	osbRequest.OperationID = vars[osb.VarKeyOperationID]
+	osbRequest.ExtensionID = vars[osb.VarKeyExtensionID]
 
 	// plan_id and service_id are set in the query string parameters and thus need to
 	// be obtained differently than instance_id and binding_id.
